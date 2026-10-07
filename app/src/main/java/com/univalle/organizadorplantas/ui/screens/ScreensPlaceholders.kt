@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 @Composable fun SplashScreen() = PlaceholderScreen("Splash Screen")
 @Composable fun AuthScreen() = PlaceholderScreen("Auth Screen (Login / Registro)")
 @Composable fun DashboardScreen() = PlaceholderScreen("Dashboard (Mi Jardín)")
-@Composable fun AnadirPlantaScreen() = PlaceholderScreen("Añadir Planta")
 @Composable fun AlertasScreen() = PlaceholderScreen("Alertas")
 @Composable fun DiagnosticoScreen() = PlaceholderScreen("Diagnóstico")
 

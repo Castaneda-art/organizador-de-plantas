@@ -13,7 +13,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -21,14 +24,28 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.univalle.organizadorplantas.data.local.room.AppDatabase
+import com.univalle.organizadorplantas.data.repository.PlantaRepository
 import com.univalle.organizadorplantas.ui.screens.*
+import com.univalle.organizadorplantas.viewmodels.PlantaViewModel
 
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    // currentBackStackEntryAsState nos permite recomponer la UI de forma reactiva al cambiar de ruta
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    // 1. Inyección manual de dependencias
+    // Obtenemos el contexto actual para inicializar la base de datos
+    val context = LocalContext.current
+    
+    // remember garantiza que no estemos recreando las instancias en cada recomposición de la UI
+    val database = remember { AppDatabase.getDatabase(context) }
+    val repository = remember { PlantaRepository(database.plantaDao()) }
+    val factory = remember { PlantaViewModel.Factory(repository) }
+    
+    // Obtenemos la instancia unificada de PlantaViewModel atada al ciclo de vida
+    val plantaViewModel: PlantaViewModel = viewModel(factory = factory)
 
     // Definimos qué rutas deben mostrar la barra inferior
     val rutasConBottomBar = listOf(
@@ -44,7 +61,6 @@ fun MainScreen() {
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar {
-                    // Item: Dashboard
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Home, contentDescription = "Dashboard") },
                         label = { Text("Jardín") },
@@ -57,7 +73,6 @@ fun MainScreen() {
                             }
                         }
                     )
-                    // Item: Añadir Planta
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Add, contentDescription = "Añadir") },
                         label = { Text("Añadir") },
@@ -70,7 +85,6 @@ fun MainScreen() {
                             }
                         }
                     )
-                    // Item: Alertas
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Notifications, contentDescription = "Alertas") },
                         label = { Text("Alertas") },
@@ -83,7 +97,6 @@ fun MainScreen() {
                             }
                         }
                     )
-                    // Item: Diagnóstico
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Build, contentDescription = "Diagnóstico") },
                         label = { Text("Diagnóstico") },
@@ -100,7 +113,6 @@ fun MainScreen() {
             }
         }
     ) { innerPadding ->
-        // Aquí se define el Grafo de Navegación central (AppNavigation)
         NavHost(
             navController = navController,
             startDestination = Rutas.Splash.ruta, // La app iniciará en el Splash Screen
@@ -108,8 +120,18 @@ fun MainScreen() {
         ) {
             composable(Rutas.Splash.ruta) { SplashScreen() }
             composable(Rutas.Auth.ruta) { AuthScreen() }
+            
+            // TODO: Cuando el equipo termine el DashboardScreen, también podrán pasarle el 'plantaViewModel' aquí
             composable(Rutas.Dashboard.ruta) { DashboardScreen() }
-            composable(Rutas.AnadirPlanta.ruta) { AnadirPlantaScreen() }
+            
+            // 2. Aquí inyectamos el navController y plantaViewModel en la vista creada
+            composable(Rutas.AnadirPlanta.ruta) { 
+                AnadirPlantaScreen(
+                    navController = navController, 
+                    viewModel = plantaViewModel
+                ) 
+            }
+            
             composable(Rutas.Alertas.ruta) { AlertasScreen() }
             composable(Rutas.Diagnostico.ruta) { DiagnosticoScreen() }
             
