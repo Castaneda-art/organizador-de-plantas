@@ -6,10 +6,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavController
+import com.univalle.organizadorplantas.ui.navigation.Rutas
+import kotlinx.coroutines.delay
 
 // Pantallas Placeholders temporales para que el equipo de UI comience a trabajar
 
-@Composable fun SplashScreen() = PlaceholderScreen("Splash Screen")
+@Composable
+fun SplashScreen(navController: NavController) {
+    // Redirige automáticamente al Dashboard tras 2 segundos
+    LaunchedEffect(key1 = true) {
+        delay(2000)
+        navController.navigate(Rutas.Dashboard.ruta) {
+            popUpTo(Rutas.Splash.ruta) {
+                inclusive = true
+            }
+        }
+    }
+
+    PlaceholderScreen("Splash Screen (Cargando...)")
+}
 @Composable fun AuthScreen() = PlaceholderScreen("Auth Screen (Login / Registro)")
 @Composable fun DashboardScreen() = PlaceholderScreen("Dashboard (Mi Jardín)")
 @Composable fun AlertasScreen() = PlaceholderScreen("Alertas")

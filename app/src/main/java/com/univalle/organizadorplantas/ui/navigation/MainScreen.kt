@@ -118,7 +118,7 @@ fun MainScreen() {
             startDestination = Rutas.Splash.ruta, // La app iniciará en el Splash Screen
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Rutas.Splash.ruta) { SplashScreen() }
+            composable(Rutas.Splash.ruta) { SplashScreen(navController) }
             composable(Rutas.Auth.ruta) { AuthScreen() }
             
             // TODO: Cuando el equipo termine el DashboardScreen, también podrán pasarle el 'plantaViewModel' aquí
