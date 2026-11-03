@@ -10,12 +10,12 @@ import kotlinx.coroutines.flow.Flow
  */
 class PlantaRepository(private val plantaDao: PlantaDao) {
 
-    // TODO (Equipo): En el ViewModel, usar .stateIn(viewModelScope, ...) para convertir 
-    // este Flow en un StateFlow que la UI en Compose pueda observar con collectAsStateWithLifecycle().
     val todasLasPlantas: Flow<List<PlantaEntity>> = plantaDao.obtenerTodasLasPlantas()
 
-    // TODO (Equipo): Al llamar estas funciones desde el ViewModel, asegúrense de usar 
-    // viewModelScope.launch { repository.insertarPlanta(planta) }
+    fun obtenerPlantaPorId(id: Int): Flow<PlantaEntity?> {
+        return plantaDao.obtenerPlantaPorId(id)
+    }
+
     suspend fun insertarPlanta(planta: PlantaEntity) {
         plantaDao.insertarPlanta(planta)
     }

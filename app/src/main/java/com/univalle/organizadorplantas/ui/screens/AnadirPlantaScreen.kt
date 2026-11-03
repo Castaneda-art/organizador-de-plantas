@@ -1,12 +1,15 @@
 package com.univalle.organizadorplantas.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -20,42 +23,44 @@ fun AnadirPlantaScreen(
     navController: NavController,
     viewModel: PlantaViewModel
 ) {
-    // 1. Manejo de Estado (State) del Formulario
+    // 1. Manejo de Estado del Formulario
     var nombre by remember { mutableStateOf("") }
     var especie by remember { mutableStateOf("") }
     var diasRiego by remember { mutableStateOf("") }
     var nivelLuz by remember { mutableStateOf("") }
 
-    // Control para mostrar el Snackbar y navegar
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // 2. Estructura Visual (Scaffold y TopAppBar)
+    val opcionesLuz = listOf("Alta", "Media", "Baja")
+    val opcionesDias = listOf("1", "3", "5", "7", "14")
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Añadir Planta") },
+                title = { Text("Añadir Nueva Planta", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar")
                     }
                 }
             )
         }
     ) { innerPadding ->
-        // 3. Formulario (Column con OutlinedTextFields)
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
                 value = nombre,
                 onValueChange = { nombre = it },
-                label = { Text("Nombre de la planta") },
+                label = { Text("Nombre común de la planta *") },
+                placeholder = { Text("Ej: Monstera Deliciosa, Pothos, Orquídea...") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -63,65 +68,90 @@ fun AnadirPlantaScreen(
             OutlinedTextField(
                 value = especie,
                 onValueChange = { especie = it },
-                label = { Text("Especie") },
+                label = { Text("Especie o nombre científico") },
+                placeholder = { Text("Ej: Monstera deliciosa, Epipremnum...") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
 
-            OutlinedTextField(
-                value = diasRiego,
-                onValueChange = { diasRiego = it },
-                label = { Text("Días de Riego") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                OutlinedTextField(
+                    value = diasRiego,
+                    onValueChange = { diasRiego = it },
+                    label = { Text("Frecuencia de Riego (cada cuántos días)") },
+                    placeholder = { Text("Ej: 7") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
 
-            // Usamos un TextField normal por ahora como solicitaste. 
-            // El equipo puede migrarlo a DropdownMenuItem (ExposedDropdownMenuBox) después.
-            OutlinedTextField(
-                value = nivelLuz,
-                onValueChange = { nivelLuz = it },
-                label = { Text("Nivel de Luz (Alta, Media, Baja)") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    opcionesDias.forEach { d ->
+                        FilterChip(
+                            selected = diasRiego == d,
+                            onClick = { diasRiego = d },
+                            label = { Text("$d ${if (d == "1") "día" else "días"}") }
+                        )
+                    }
+                }
+            }
 
-            Spacer(modifier = Modifier.weight(1f)) // Empuja el botón hacia la parte inferior si hay espacio
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                OutlinedTextField(
+                    value = nivelLuz,
+                    onValueChange = { nivelLuz = it },
+                    label = { Text("Nivel de Luz solar") },
+                    placeholder = { Text("Alta, Media o Baja") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
 
-            // 4. Botón de Guardar y Feedback Visual
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    opcionesLuz.forEach { luz ->
+                        FilterChip(
+                            selected = nivelLuz.equals(luz, ignoreCase = true),
+                            onClick = { nivelLuz = luz },
+                            label = { Text("Luz $luz") }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                // Previene guardar si el nombre está vacío
                 enabled = nombre.isNotBlank(),
                 onClick = {
-                    // Conversión segura para evitar crasheos si se ingresa texto no numérico accidentalmente
                     val diasInt = diasRiego.toIntOrNull() ?: 1
+                    val luzFinal = if (nivelLuz.isBlank()) "Media" else nivelLuz.trim()
 
                     val nuevaPlanta = PlantaEntity(
-                        nombre = nombre,
-                        especie = especie,
+                        nombre = nombre.trim(),
+                        especie = especie.trim(),
                         diasRiego = diasInt,
-                        nivelLuz = nivelLuz,
-                        imagenUri = null // Opcional por el momento
+                        nivelLuz = luzFinal,
+                        imagenUri = null
                     )
 
-                    // Guardamos la planta a través del ViewModel (Room)
                     viewModel.agregarPlanta(nuevaPlanta)
 
-                    // Mostramos el Snackbar y regresamos al Dashboard
                     coroutineScope.launch {
-                        // El snackbar pausa la corrutina brevemente para mostrar el mensaje
                         snackbarHostState.showSnackbar(
-                            message = "Planta añadida correctamente",
+                            message = "🌱 ¡${nuevaPlanta.nombre} añadida a tu jardín!",
                             duration = SnackbarDuration.Short
                         )
-                        // popBackStack devuelve al usuario a la pantalla anterior (Dashboard)
                         navController.popBackStack()
                     }
                 }
             ) {
-                Text("Guardar Planta")
+                Text("Guardar Planta en Mi Jardín")
             }
         }
     }

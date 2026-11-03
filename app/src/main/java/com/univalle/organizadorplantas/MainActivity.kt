@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
 
             // 3. Envolvemos toda la app en el tema pasando el booleano reactivo
             OrganizadorPlantasTheme(darkTheme = isDarkTheme) {
-                MainScreen()
+                MainScreen(themeViewModel = themeViewModel)
             }
         }
     }
