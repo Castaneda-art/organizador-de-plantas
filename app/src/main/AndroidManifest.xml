@@ -5,7 +5,7 @@
         android:label="Organizador de Plantas"
         android:supportsRtl="true">
         <activity
-            android:name=".MainActivity"
+            android:name="com.univalle.organizadorplantas.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
