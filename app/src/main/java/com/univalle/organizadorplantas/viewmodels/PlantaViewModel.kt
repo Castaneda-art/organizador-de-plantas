@@ -43,6 +43,12 @@ class PlantaViewModel(private val repository: PlantaRepository) : ViewModel() {
         }
     }
 
+    fun actualizarPlanta(planta: PlantaEntity) {
+        viewModelScope.launch {
+            repository.actualizarPlanta(planta)
+        }
+    }
+
     fun eliminarPlanta(planta: PlantaEntity) {
         viewModelScope.launch {
             repository.eliminarPlanta(planta)

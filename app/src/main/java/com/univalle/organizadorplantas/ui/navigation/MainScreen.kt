@@ -121,8 +121,12 @@ fun MainScreen() {
             composable(Rutas.Splash.ruta) { SplashScreen(navController) }
             composable(Rutas.Auth.ruta) { AuthScreen() }
             
-            // TODO: Cuando el equipo termine el DashboardScreen, también podrán pasarle el 'plantaViewModel' aquí
-            composable(Rutas.Dashboard.ruta) { DashboardScreen() }
+            composable(Rutas.Dashboard.ruta) { 
+                DashboardScreen(
+                    navController = navController,
+                    viewModel = plantaViewModel
+                ) 
+            }
             
             // 2. Aquí inyectamos el navController y plantaViewModel en la vista creada
             composable(Rutas.AnadirPlanta.ruta) { 

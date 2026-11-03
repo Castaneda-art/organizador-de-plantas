@@ -28,7 +28,6 @@ fun SplashScreen(navController: NavController) {
     PlaceholderScreen("Splash Screen (Cargando...)")
 }
 @Composable fun AuthScreen() = PlaceholderScreen("Auth Screen (Login / Registro)")
-@Composable fun DashboardScreen() = PlaceholderScreen("Dashboard (Mi Jardín)")
 @Composable fun AlertasScreen() = PlaceholderScreen("Alertas")
 @Composable fun DiagnosticoScreen() = PlaceholderScreen("Diagnóstico")
 
