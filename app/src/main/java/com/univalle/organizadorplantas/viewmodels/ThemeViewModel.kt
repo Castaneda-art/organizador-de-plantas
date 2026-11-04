@@ -10,24 +10,52 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel que expone y actualiza las preferencias de usuario almacenadas en DataStore.
+ * Se conserva el nombre ThemeViewModel para no romper las referencias existentes del proyecto.
+ */
 class ThemeViewModel(private val preferencesRepository: UserPreferencesRepository) : ViewModel() {
 
-    // Convierte el Flow de DataStore en un StateFlow para que Compose lo observe eficientemente
     val isDarkTheme: StateFlow<Boolean> = preferencesRepository.isDarkTheme
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = false
         )
 
-    // Actualiza la preferencia en un hilo secundario mediante corrutinas
+    val areWateringRemindersEnabled: StateFlow<Boolean> = preferencesRepository.areWateringRemindersEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = true
+        )
+
+    val areSeasonalTipsEnabled: StateFlow<Boolean> = preferencesRepository.areSeasonalTipsEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
+
     fun toggleDarkTheme(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.setDarkTheme(enabled)
         }
     }
 
-    // Factory manual para inyectar UserPreferencesRepository sin requerir Hilt/Dagger
+    fun setWateringRemindersEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setWateringRemindersEnabled(enabled)
+        }
+    }
+
+    fun setSeasonalTipsEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setSeasonalTipsEnabled(enabled)
+        }
+    }
+
+    // Factory manual para inyectar UserPreferencesRepository sin requerir Hilt/Dagger.
     class Factory(private val repository: UserPreferencesRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

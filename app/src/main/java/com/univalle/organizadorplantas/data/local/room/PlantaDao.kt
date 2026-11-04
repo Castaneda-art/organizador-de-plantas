@@ -18,6 +18,9 @@ interface PlantaDao {
     @Query("SELECT * FROM plantas ORDER BY nombre ASC")
     fun obtenerTodasLasPlantas(): Flow<List<PlantaEntity>>
 
+    @Query("SELECT * FROM plantas WHERE id = :id")
+    fun obtenerPlantaPorId(id: Int): Flow<PlantaEntity?>
+
     @Update
     suspend fun actualizarPlanta(planta: PlantaEntity)
 

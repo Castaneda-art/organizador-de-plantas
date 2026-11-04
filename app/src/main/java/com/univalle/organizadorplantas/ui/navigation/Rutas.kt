@@ -7,6 +7,7 @@ sealed class Rutas(val ruta: String) {
     object AnadirPlanta : Rutas("anadir_planta")
     object Alertas : Rutas("alertas")
     object Diagnostico : Rutas("diagnostico")
+    object Ajustes : Rutas("ajustes")
     
     // Ruta dinámica que requiere un argumento
     object DetallePlanta : Rutas("detalle_planta/{plantaId}") {

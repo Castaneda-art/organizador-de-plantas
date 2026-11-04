@@ -1,17 +1,24 @@
 package com.univalle.organizadorplantas.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,22 +40,25 @@ fun DashboardScreen(
     // 1. Observación reactiva del estado del ViewModel
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Estados para controlar los diálogos de edición y eliminación
+    // Estados locales para búsqueda, edición y eliminación
+    var filtroBusqueda by remember { mutableStateOf("") }
     var plantaAEditar by remember { mutableStateOf<PlantaEntity?>(null) }
     var plantaAEliminar by remember { mutableStateOf<PlantaEntity?>(null) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mi Jardín", fontWeight = FontWeight.Bold) }
+                title = {
+                    Text("Mi Jardín", fontWeight = FontWeight.Bold)
+                }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate(Rutas.AnadirPlanta.ruta) }
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Añadir planta")
-            }
+            ExtendedFloatingActionButton(
+                onClick = { navController.navigate(Rutas.AnadirPlanta.ruta) },
+                icon = { Icon(Icons.Default.Add, contentDescription = "Añadir planta") },
+                text = { Text("Añadir Planta") }
+            )
         },
         modifier = modifier
     ) { innerPadding ->
@@ -87,32 +97,98 @@ fun DashboardScreen(
                 }
 
                 is PlantasUiState.Success -> {
-                    val plantas = state.plantas
-                    if (plantas.isEmpty()) {
+                    val todasLasPlantas = state.plantas
+
+                    if (todasLasPlantas.isEmpty()) {
                         EmptyPlantasView(
-                            onAnadirClick = { navController.navigate(Rutas.AnadirPlanta.ruta) }
+                            onAnadirClick = { navController.navigate(Rutas.AnadirPlanta.ruta) },
+                            onCargarEjemplosClick = { viewModel.cargarPlantasDeEjemplo() }
                         )
                     } else {
+                        // Filtrado por buscador
+                        val plantasFiltradas = remember(todasLasPlantas, filtroBusqueda) {
+                            if (filtroBusqueda.isBlank()) {
+                                todasLasPlantas
+                            } else {
+                                todasLasPlantas.filter {
+                                    it.nombre.contains(filtroBusqueda, ignoreCase = true) ||
+                                            it.especie.contains(filtroBusqueda, ignoreCase = true)
+                                }
+                            }
+                        }
+
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
+                            // Cabecera con Resumen del Jardín
                             item {
-                                Text(
-                                    text = "Plantas registradas (${plantas.size})",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.SemiBold,
-                                    modifier = Modifier.padding(bottom = 4.dp)
+                                ResumenJardinCard(
+                                    totalPlantas = todasLasPlantas.size
                                 )
                             }
+
+                            // Barra de búsqueda reactiva
+                            item {
+                                OutlinedTextField(
+                                    value = filtroBusqueda,
+                                    onValueChange = { filtroBusqueda = it },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    placeholder = { Text("Buscar planta por nombre o especie...") },
+                                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                                    trailingIcon = {
+                                        if (filtroBusqueda.isNotEmpty()) {
+                                            IconButton(onClick = { filtroBusqueda = "" }) {
+                                                Icon(Icons.Default.Clear, contentDescription = "Limpiar")
+                                            }
+                                        }
+                                    },
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(14.dp)
+                                )
+                            }
+
+                            // Título de la lista
+                            item {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = if (filtroBusqueda.isBlank()) {
+                                            "Mis Plantas (${plantasFiltradas.size})"
+                                        } else {
+                                            "Resultados (${plantasFiltradas.size})"
+                                        },
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                    Text(
+                                        text = "Toca para ver detalles",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            // Lista de tarjetas visuales de plantas
                             items(
-                                items = plantas,
+                                items = plantasFiltradas,
                                 key = { it.id }
                             ) { planta ->
-                                PlantaCard(
+                                PlantaVisualCard(
                                     planta = planta,
+                                    onClick = {
+                                        navController.navigate(Rutas.DetallePlanta.crearRuta(planta.id))
+                                    },
                                     onEdit = { plantaAEditar = planta },
                                     onDelete = { plantaAEliminar = planta }
                                 )
@@ -165,17 +241,76 @@ fun DashboardScreen(
 }
 
 /**
- * Tarjeta individual para mostrar los datos de una planta en la lista
+ * Tarjeta de Resumen con Métricas del Jardín
  */
 @Composable
-fun PlantaCard(
+fun ResumenJardinCard(
+    totalPlantas: Int,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Estado del Jardín",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (totalPlantas == 1) "1 planta registrada y cuidada" else "$totalPlantas plantas registradas y cuidadas",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
+                )
+            }
+
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = totalPlantas.toString(),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Tarjeta visual interactiva para mostrar los datos de una planta en la lista
+ */
+@Composable
+fun PlantaVisualCard(
     planta: PlantaEntity,
+    onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -188,61 +323,81 @@ fun PlantaCard(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Avatar inicial de la planta
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = planta.nombre.take(1).uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Nombre y especie
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = planta.nombre,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = planta.especie.ifBlank { "Sin especie especificada" },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
+                // Acciones rápidas
                 Row {
                     IconButton(onClick = onEdit) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Editar ${planta.nombre}",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                     IconButton(onClick = onDelete) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Eliminar ${planta.nombre}",
-                            tint = MaterialTheme.colorScheme.error
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-            Spacer(modifier = Modifier.height(8.dp))
-
+            // Chips con información visual de cuidados
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "💧 Riego: cada ${planta.diasRiego} días",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                AssistChip(
+                    onClick = onClick,
+                    label = { Text("Cada ${planta.diasRiego} días") }
                 )
-                Text(
-                    text = "☀️ Luz: ${planta.nivelLuz.ifBlank { "N/A" }}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                AssistChip(
+                    onClick = onClick,
+                    label = { Text("Luz ${planta.nivelLuz.ifBlank { "Media" }}") }
                 )
             }
         }
@@ -250,11 +405,12 @@ fun PlantaCard(
 }
 
 /**
- * Pantalla que se muestra cuando la lista de plantas está vacía
+ * Pantalla amigable que se muestra cuando la lista de plantas está vacía
  */
 @Composable
 fun EmptyPlantasView(
     onAnadirClick: () -> Unit,
+    onCargarEjemplosClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -265,26 +421,32 @@ fun EmptyPlantasView(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "🌱",
-            style = MaterialTheme.typography.displayMedium
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
             text = "Tu jardín está vacío",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Añade tus plantas para hacer seguimiento a sus riegos y cuidados.",
+            text = "Añade tus plantas para hacer seguimiento a sus riegos, cuidados y salud botánica.",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = onAnadirClick) {
+        Button(
+            onClick = onAnadirClick,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Icon(Icons.Default.Add, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Añadir mi primera planta")
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedButton(
+            onClick = onCargarEjemplosClick,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Cargar plantas de ejemplo")
         }
     }
 }
