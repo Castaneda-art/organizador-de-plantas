@@ -38,11 +38,7 @@ fun AlertasScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "🔔", fontSize = 22.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Alertas y Riegos", fontWeight = FontWeight.Bold)
-                    }
+                    Text("Alertas y Riegos", fontWeight = FontWeight.Bold)
                 }
             )
         },
@@ -79,8 +75,6 @@ fun AlertasScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Text(text = "🔔", fontSize = 56.sp)
-                            Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = "Sin alertas pendientes",
                                 style = MaterialTheme.typography.titleLarge,
@@ -111,27 +105,23 @@ fun AlertasScreen(
                                         containerColor = MaterialTheme.colorScheme.secondaryContainer
                                     )
                                 ) {
-                                    Row(
+                                    Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(16.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                            .padding(16.dp)
                                     ) {
-                                        Text(text = "💧", fontSize = 28.sp)
-                                        Spacer(modifier = Modifier.width(12.dp))
-                                        Column {
-                                            Text(
-                                                text = "Programación de Riegos",
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                                            )
-                                            Text(
-                                                text = "${plantas.size} plantas con seguimiento activo de hidratación.",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f)
-                                            )
-                                        }
+                                        Text(
+                                            text = "Programación de Riegos",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = "${plantas.size} plantas con seguimiento activo de hidratación.",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f)
+                                        )
                                     }
                                 }
                             }
@@ -152,7 +142,7 @@ fun AlertasScreen(
                                     onMarcarRegada = {
                                         coroutineScope.launch {
                                             snackbarHostState.showSnackbar(
-                                                "💧 Se registró el riego para ${planta.nombre}. Próximo en ${planta.diasRiego} días."
+                                                "Se registró el riego para ${planta.nombre}. Próximo en ${planta.diasRiego} días."
                                             )
                                         }
                                     },
@@ -195,10 +185,15 @@ fun AlertaPlantaCard(
                     modifier = Modifier
                         .size(42.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = obtenerEmojiPlanta(planta.nombre, planta.especie), fontSize = 22.sp)
+                    Text(
+                        text = planta.nombre.take(1).uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -242,7 +237,7 @@ fun AlertaPlantaCard(
                     onClick = onMarcarRegada,
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
-                    Text("💧 Regar hoy")
+                    Text("Regar hoy")
                 }
             }
         }

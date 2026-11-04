@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.univalle.organizadorplantas.viewmodels.ThemeViewModel
 
@@ -31,11 +30,7 @@ fun AjustesScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "⚙️", fontSize = 22.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Ajustes", fontWeight = FontWeight.Bold)
-                    }
+                    Text("Ajustes", fontWeight = FontWeight.Bold)
                 }
             )
         },

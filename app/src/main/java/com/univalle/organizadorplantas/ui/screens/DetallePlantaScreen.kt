@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.univalle.organizadorplantas.data.local.room.PlantaEntity
@@ -88,11 +87,6 @@ fun DetallePlantaScreen(
                     modifier = Modifier.padding(24.dp)
                 ) {
                     Text(
-                        text = "🌱",
-                        fontSize = 48.sp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
                         text = "Planta no encontrada",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
@@ -132,17 +126,19 @@ fun DetallePlantaScreen(
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Avatar botánico
+                        // Avatar inicial de la planta
                         Box(
                             modifier = Modifier
-                                .size(96.dp)
+                                .size(88.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.surface),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = obtenerEmojiPlanta(planta.nombre, planta.especie),
-                                fontSize = 48.sp
+                                text = planta.nombre.take(1).uppercase(),
+                                style = MaterialTheme.typography.displaySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
 
@@ -191,17 +187,11 @@ fun DetallePlantaScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "💧", fontSize = 24.sp)
-                            Text(
-                                text = "Frecuencia de Riego",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        Text(
+                            text = "Frecuencia de Riego",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
 
                         Text(
                             text = "Esta planta requiere riego cada ${planta.diasRiego} ${if (planta.diasRiego == 1) "día" else "días"}.",
@@ -218,13 +208,13 @@ fun DetallePlantaScreen(
                             onClick = {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar(
-                                        "💧 ¡Riego registrado para ${planta.nombre}! Próximo riego en ${planta.diasRiego} días."
+                                        "¡Riego registrado para ${planta.nombre}! Próximo riego en ${planta.diasRiego} días."
                                     )
                                 }
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("💧 Marcar como regada hoy")
+                            Text("Marcar como regada hoy")
                         }
                     }
                 }
@@ -241,17 +231,11 @@ fun DetallePlantaScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "☀️", fontSize = 24.sp)
-                            Text(
-                                text = "Requerimiento de Luz Solar",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        Text(
+                            text = "Requerimiento de Luz Solar",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
 
                         Text(
                             text = "Nivel recomendado: ${planta.nivelLuz.ifBlank { "Media" }}",
@@ -280,7 +264,7 @@ fun DetallePlantaScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "📋 Guía de Mantenimiento",
+                            text = "Guía de Mantenimiento",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -373,21 +357,6 @@ fun DetallePlantaScreen(
                 }
             }
         )
-    }
-}
-
-/**
- * Selecciona un emoji botánico representativo según el nombre o especie
- */
-fun obtenerEmojiPlanta(nombre: String, especie: String): String {
-    val texto = "$nombre $especie".lowercase()
-    return when {
-        texto.contains("cactus") || texto.contains("cact") -> "🌵"
-        texto.contains("suculenta") || texto.contains("aloe") || texto.contains("echeveria") -> "🪴"
-        texto.contains("orquidea") || texto.contains("rosa") || texto.contains("flor") -> "🌸"
-        texto.contains("arbol") || texto.contains("bonsai") || texto.contains("ficus") -> "🌳"
-        texto.contains("helecho") || texto.contains("palma") -> "🌿"
-        else -> "🌱"
     }
 }
 

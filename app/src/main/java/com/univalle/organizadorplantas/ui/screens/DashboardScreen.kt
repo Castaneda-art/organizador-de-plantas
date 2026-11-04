@@ -23,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.univalle.organizadorplantas.data.local.room.PlantaEntity
@@ -50,11 +49,7 @@ fun DashboardScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "🌿", fontSize = 24.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Mi Jardín", fontWeight = FontWeight.Bold)
-                    }
+                    Text("Mi Jardín", fontWeight = FontWeight.Bold)
                 }
             )
         },
@@ -269,7 +264,7 @@ fun ResumenJardinCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "🌱 Estado del Jardín",
+                    text = "Estado del Jardín",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -330,17 +325,19 @@ fun PlantaVisualCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Avatar botánico
+                // Avatar inicial de la planta
                 Box(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surface),
+                        .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = obtenerEmojiPlanta(planta.nombre, planta.especie),
-                        fontSize = 26.sp
+                        text = planta.nombre.take(1).uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
 
@@ -396,11 +393,11 @@ fun PlantaVisualCard(
             ) {
                 AssistChip(
                     onClick = onClick,
-                    label = { Text("💧 Cada ${planta.diasRiego} días") }
+                    label = { Text("Cada ${planta.diasRiego} días") }
                 )
                 AssistChip(
                     onClick = onClick,
-                    label = { Text("☀️ Luz ${planta.nivelLuz.ifBlank { "Media" }}") }
+                    label = { Text("Luz ${planta.nivelLuz.ifBlank { "Media" }}") }
                 )
             }
         }
@@ -423,11 +420,6 @@ fun EmptyPlantasView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "🪴",
-            fontSize = 64.sp
-        )
-        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "Tu jardín está vacío",
             style = MaterialTheme.typography.headlineSmall,
@@ -454,7 +446,7 @@ fun EmptyPlantasView(
             onClick = onCargarEjemplosClick,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("🌱 Cargar plantas de ejemplo")
+            Text("Cargar plantas de ejemplo")
         }
     }
 }

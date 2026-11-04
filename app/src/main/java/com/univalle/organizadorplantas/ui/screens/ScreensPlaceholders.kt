@@ -41,12 +41,17 @@ fun SplashScreen(navController: NavController) {
         ) {
             Box(
                 modifier = Modifier
-                    .size(100.dp)
+                    .size(96.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "🌿", fontSize = 52.sp)
+                Text(
+                    text = "OP",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -97,7 +102,6 @@ fun AuthScreen(navController: NavController? = null) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(text = "🌱", fontSize = 42.sp)
                 Text(
                     text = "Iniciar Sesión",
                     style = MaterialTheme.typography.headlineSmall,

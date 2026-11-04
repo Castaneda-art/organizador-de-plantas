@@ -144,7 +144,7 @@ fun AnadirPlantaScreen(
 
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
-                            message = "🌱 ¡${nuevaPlanta.nombre} añadida a tu jardín!",
+                            message = "¡${nuevaPlanta.nombre} añadida a tu jardín!",
                             duration = SnackbarDuration.Short
                         )
                         navController.popBackStack()
